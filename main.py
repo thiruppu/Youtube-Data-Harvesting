@@ -38,7 +38,7 @@ mydb = SQLC.connect(
     database="project01"
 )
 mycursor = mydb.cursor()
-
+global channel_details 
 def details_extraction():
     # Fetch channel details from YouTube API
     request = youtube.channels().list(
@@ -172,7 +172,7 @@ def mongo_migration():
             # Handle the case when comments are disabled for the video
             print(f"Comments are disabled for video ID {k}: {e}")
 
-    st.write(commentdetailslist)
+    #st.write('Data uploaded to Mongo DB Successfully !')
 
 
     combined_data = {'Channel Detail':channel_details,'PlaylistIds':playListids,'VideoDetails':videodetaillist,'CommentDetails':commentdetailslist}
@@ -185,16 +185,18 @@ def mongo_migration():
         records.insert_one(combined_data)
         st.write("Channel uploladed")
         st_autorefresh(limit = 1)
-
+if button_ext:
+    details_extraction()
+if button_upload:
+    mongo_migration()
 def dropdown():
     channel = records.find({})
     channel_id = set()
     for i in channel:
-        channelid = i['Channel Detail']['channel details']['channel_id']
+        channelid = i['Channel Detail']['channel details']['channel_name']
         channel_id.add(channelid)
 
-    selectbox_chatid = st.selectbox('Select the channel you want to migrate to SQL',
-                       sorted(channel_id))
+    selectbox_chatid = st.selectbox('Select the channel you want to migrate to SQL',channel_id)
 
     
     submit = st.button("Submit")
@@ -264,10 +266,7 @@ def dropdown():
     return selectbox_chatid
 
 dropdown()
-if button_ext:
-    details_extraction()
-if button_upload:
-    mongo_migration()
+
 
 def queries():
     Qns = ['Q1. Title of all videos and their channel',
